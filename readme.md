@@ -596,26 +596,445 @@ mindctl/
 
 ---
 
-## 👥 Équipe
+---
+
+## 👥 Division des Tâches — Équipe
 
 > Projet réalisé dans le cadre du module **Théorie des Systèmes d'Exploitation & SE Windows/Unix/Linux**
 > ENSET Mohammedia — Université Hassan II de Casablanca — 2026
 
-| Membre | Rôle |
-|--------|------|
-| 👤 Membre 1 | Script principal + gestion des options |
-| 👤 Membre 2 | Agents IA + intégration LLM |
-| 👤 Membre 3 | Modules C (fork + threads) + mode interactif |
-| 👤 Membre 4 | Notifications email + documentation + tests |
+---
+
+### 📅 Planning général
+
+| Semaine | Personne 1 | Personne 2 | Personne 3 |
+|---------|-----------|-----------|-----------|
+| Semaine 1 | Structure `mindctl.sh` + options + logs | `fork_agent.c` + `thread_agent.c` | Intégration LLM + appel `curl` |
+| Semaine 2 | Agents système + pipeline `-w` | Agents données | Mode interactif + email |
+| Semaine 3 | Tests + corrections + `-h` complet | Tests modules C | Préparation démo + scénarios |
 
 ---
 
-<div align="center">
+### 👤 Personne 1 — Script principal + Agents système
 
-**Date limite de soumission : 14/05/2026 à 23:59:59**
+> **Rôle :** Chef technique du projet. Responsable du cœur du script `mindctl.sh` et des agents qui analysent le système Linux.
+
+#### 1. Le script principal `mindctl.sh`
+
+C'est le fichier le plus important du projet. Il reçoit les commandes de l'utilisateur et appelle les bons agents selon les options choisies.
+
+**Ce que tu dois implémenter :**
+
+- Parser toutes les options avec `getopts` : `-h`, `-f`, `-t`, `-s`, `-l`, `-r`, `-a`, `-p`, `-w`, `-i`, `-n`
+- Vérifier que `-p` est présent — si absent, déclencher l'erreur `101` et afficher l'aide
+- Détecter automatiquement le type de fichier reçu (log, CSV, JSON) pour appeler le bon agent
+- Vérifier les droits root pour l'option `-r` avec `[[ $EUID -ne 0 ]]`
+- Implémenter le mode pipeline `-w` qui enchaîne les agents automatiquement
+- Afficher l'aide complète avec `-h` (documentation conforme au standard Linux)
+- Afficher automatiquement l'aide après chaque erreur déclenchée
+
+**Structure de base du script :**
+
+```bash
+#!/bin/bash
+
+# Vérification des options
+while getopts "hftsrl:a:p:win:" opt; do
+    case $opt in
+        h) afficher_aide ;;
+        f) MODE="fork" ;;
+        t) MODE="thread" ;;
+        s) MODE="subshell" ;;
+        l) LOG_DIR="$OPTARG" ;;
+        r) check_root && reset_config ;;
+        a) AGENT="$OPTARG" ;;
+        p) PARAMETRE="$OPTARG" ;;
+        w) PIPELINE=true ;;
+        i) mode_interactif ;;
+        n) NOTIFIER="$OPTARG" ;;
+        *) erreur 100 ;;
+    esac
+done
+
+# Vérification paramètre obligatoire
+[ -z "$PARAMETRE" ] && erreur 101
+```
+
+#### 2. Le système de journalisation
+
+**Tous tes coéquipiers utilisent cette fonction — tu dois la créer en premier et la partager.**
+
+```bash
+# Format obligatoire imposé par le prof :
+# yyyy-mm-dd-hh-mm-ss : username : INFOS : message
+# yyyy-mm-dd-hh-mm-ss : username : ERROR : message
+
+function log_message() {
+    local TYPE=$1    # INFOS ou ERROR
+    local MSG=$2
+    local DATE=$(date +"%Y-%m-%d-%H-%M-%S")
+    local USER=$(whoami)
+    local LIGNE="$DATE : $USER : $TYPE : $MSG"
+    echo "$LIGNE" | tee -a /var/log/mindctl/history.log
+}
+```
+
+- Créer automatiquement le dossier `/var/log/mindctl/reports/` au démarrage
+- Rediriger les sorties standard et d'erreur simultanément vers terminal + fichier via `tee`
+
+#### 3. Les agents système
+
+**`agents/systeme/summarizer.sh`**
+Lit un fichier log, extrait les lignes importantes avec `grep` et `awk`, envoie au LLM, affiche le résumé.
+
+**`agents/systeme/classifier.sh`**
+Trie les erreurs par niveau de gravité (CRITIQUE, AVERTISSEMENT, INFO) en utilisant des expressions régulières.
+
+**`agents/systeme/monitor.sh`**
+Collecte les métriques système avec `top`, `free`, `df`, `netstat` et les envoie au LLM pour analyse.
+
+#### 4. Gestion des erreurs
+
+```bash
+function erreur() {
+    local CODE=$1
+    case $CODE in
+        100) echo "[ERREUR 100] Option inexistante" ;;
+        101) echo "[ERREUR 101] Paramètre obligatoire manquant : -p <fichier>" ;;
+        102) echo "[ERREUR 102] Fichier ou dossier introuvable" ;;
+        103) echo "[ERREUR 103] Permission refusée" ;;
+        104) echo "[ERREUR 104] Format de fichier non supporté" ;;
+        105) echo "[ERREUR 105] LLM inaccessible" ;;
+        106) echo "[ERREUR 106] Agent inconnu" ;;
+        107) echo "[ERREUR 107] Échec du traitement" ;;
+    esac
+    log_message "ERROR" "Code $CODE déclenché"
+    afficher_aide   # afficher l'aide automatiquement après chaque erreur
+    exit $CODE
+}
+```
+
+#### 5. Fichiers à livrer
+
+```
+mindctl.sh                    ← script principal
+agents/systeme/
+    ├── summarizer.sh
+    ├── classifier.sh
+    └── monitor.sh
+```
+
+---
+
+### 👤 Personne 2 — Modules C + Agents données
+
+> **Rôle :** Responsable de la performance et du traitement des données. Tu gères tout ce qui est parallélisme en C et nettoyage/transformation des fichiers CSV et JSON.
+
+#### 1. Le module Fork `fork_agent.c`
+
+Le fork crée un **processus fils** pour chaque agent. Si un agent plante, les autres continuent sans problème.
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int lancer_agent_fork(char *commande) {
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        // Processus fils : exécute l'agent
+        execl("/bin/bash", "bash", commande, NULL);
+        exit(1);
+    } else if (pid > 0) {
+        // Processus père : attend la fin du fils
+        int status;
+        waitpid(pid, &status, 0);
+        return WEXITSTATUS(status);
+    } else {
+        perror("Erreur fork");
+        return -1;
+    }
+}
+```
+
+**Compiler avec :**
+```bash
+gcc fork_agent.c -o fork_agent
+```
+
+#### 2. Le module Thread `thread_agent.c`
+
+Les threads analysent **plusieurs fichiers simultanément** dans le même processus. Plus léger que fork, idéal pour 10 à 50 fichiers.
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+typedef struct {
+    char *fichier;
+    char *agent;
+} TacheAgent;
+
+void *executer_agent(void *arg) {
+    TacheAgent *tache = (TacheAgent *)arg;
+    char commande[256];
+    snprintf(commande, sizeof(commande),
+             "bash agents/%s.sh -p %s", tache->agent, tache->fichier);
+    system(commande);
+    return NULL;
+}
+
+int lancer_agents_threads(char **fichiers, int nb, char *agent) {
+    pthread_t threads[nb];
+    TacheAgent taches[nb];
+
+    for (int i = 0; i < nb; i++) {
+        taches[i].fichier = fichiers[i];
+        taches[i].agent = agent;
+        pthread_create(&threads[i], NULL, executer_agent, &taches[i]);
+    }
+
+    for (int i = 0; i < nb; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    return 0;
+}
+```
+
+**Compiler avec :**
+```bash
+gcc thread_agent.c -o thread_agent -lpthread
+```
+
+#### 3. Les agents données
+
+**`agents/donnees/cleaner.sh`**
+Supprime les doublons, lignes vides et valeurs nulles d'un fichier CSV :
+
+```bash
+# Supprimer les lignes vides
+grep -v '^$' "$FICHIER" > tmp.csv
+
+# Supprimer les doublons
+sort tmp.csv | uniq > clean.csv
+
+# Compter ce qui a été supprimé
+AVANT=$(wc -l < "$FICHIER")
+APRES=$(wc -l < clean.csv)
+log_message "INFOS" "$((AVANT - APRES)) doublons supprimés"
+```
+
+**`agents/donnees/transformer.sh`**
+Convertit CSV vers JSON et inversement avec `awk` et `sed`.
+
+**`agents/donnees/analyzer.sh`**
+Calcule les statistiques de base (nombre de lignes, valeurs nulles, moyennes) avec `awk`.
+
+**`agents/donnees/validator.sh`**
+Vérifie la structure d'un fichier avec des expressions régulières — nombre de colonnes cohérent, format des dates, emails valides.
+
+#### 4. Fichiers à livrer
+
+```
+fork_agent.c
+thread_agent.c
+agents/donnees/
+    ├── cleaner.sh
+    ├── transformer.sh
+    ├── analyzer.sh
+    └── validator.sh
+```
+
+---
+
+### 👤 Personne 3 — LLM + Mode interactif + Email + Tests
+
+> **Rôle :** Responsable de l'intelligence du projet et de la démonstration. Tu gères tout ce qui touche au LLM, au chat interactif, aux notifications email, et tu prépares la démo finale.
+
+#### 1. L'intégration LLM
+
+Tous les agents qui appellent Ollama/Mistral utilisent cette fonction — **tu dois la créer et la partager avec tes coéquipiers.**
+
+```bash
+function appeler_llm() {
+    local PROMPT="$1"
+
+    # Vérifier que Ollama tourne
+    if ! curl -s http://localhost:11434 > /dev/null 2>&1; then
+        log_message "ERROR" "LLM inaccessible — bascule en mode classique"
+        erreur 105
+        return 1
+    fi
+
+    # Appel au LLM
+    REPONSE=$(curl -s http://localhost:11434/api/generate \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"model\": \"$LLM_MODEL\",
+            \"prompt\": \"$PROMPT\",
+            \"stream\": false
+        }" | grep -o '"response":"[^"]*"' | cut -d'"' -f4)
+
+    echo "$REPONSE"
+}
+```
+
+**`agents/donnees/insight.sh`**
+L'agent le plus important du projet — il croise les données système et les fichiers CSV pour trouver des corrélations :
+
+```bash
+# Récupérer les résultats des deux branches
+RESULTATS_SYSTEME=$(cat /var/log/mindctl/reports/last_system.txt)
+RESULTATS_DONNEES=$(cat /var/log/mindctl/reports/last_data.txt)
+
+# Construire le prompt de corrélation
+PROMPT="Voici des erreurs système Linux : $RESULTATS_SYSTEME
+Et voici des anomalies dans les données CSV : $RESULTATS_DONNEES
+Y a-t-il une corrélation entre les deux ? Explique en 3 points."
+
+# Envoyer au LLM
+appeler_llm "$PROMPT"
+```
+
+**`agents/systeme/coder.sh`**
+Lit un script Bash ou fichier C et demande au LLM de détecter les bugs et suggérer des améliorations.
+
+#### 2. Le mode interactif `interactive/chat.sh`
+
+```bash
+#!/bin/bash
+
+HISTORIQUE=""
+
+echo "╔══════════════════════════════════════════╗"
+echo "║      mindctl — Mode Interactif v1.0      ║"
+echo "║      Tapez 'help' pour les commandes     ║"
+echo "╚══════════════════════════════════════════╝"
+echo ""
+
+while true; do
+    read -p "[vous] " INPUT
+
+    case "$INPUT" in
+        exit)
+            echo "[agent] Session terminée."
+            break ;;
+        help)
+            afficher_aide_interactive ;;
+        monitore)
+            bash agents/systeme/monitor.sh ;;
+        rapport)
+            bash notifiers/email.sh ;;
+        historique)
+            tail -10 /var/log/mindctl/history.log ;;
+        reset)
+            HISTORIQUE=""
+            echo "[agent] Mémoire effacée." ;;
+        analyse\ *)
+            FICHIER="${INPUT#analyse }"
+            bash mindctl.sh -a summarizer -p "$FICHIER" ;;
+        nettoie\ *)
+            FICHIER="${INPUT#nettoie }"
+            bash mindctl.sh -a cleaner -p "$FICHIER" ;;
+        *)
+            # Question libre → envoyer au LLM avec historique
+            HISTORIQUE="$HISTORIQUE\nUtilisateur: $INPUT"
+            REPONSE=$(appeler_llm "$HISTORIQUE")
+            echo "[agent] $REPONSE"
+            HISTORIQUE="$HISTORIQUE\nAgent: $REPONSE" ;;
+    esac
+done
+```
+
+#### 3. Les notifications email `notifiers/email.sh`
+
+```bash
+#!/bin/bash
+
+function send_email() {
+    local RAPPORT="$1"
+    local DATE=$(date +"%Y-%m-%d %H:%M:%S")
+
+    echo "
+[mindctl] Rapport — $DATE
+
+$RAPPORT
+
+Logs complets : /var/log/mindctl/history.log
+    " | mail -s "[mindctl] Rapport — $DATE" "$NOTIFY_EMAIL"
+
+    log_message "INFOS" "Email envoyé à $NOTIFY_EMAIL"
+}
+```
+
+#### 4. Préparer les fichiers de test et la démo
+
+**Fichiers à créer dans `exemple/` :**
+
+```bash
+# test_leger.csv — 100 lignes pour scénario léger
+# Générer avec :
+echo "id,nom,age,salary" > exemple/test_leger.csv
+for i in $(seq 1 100); do
+    echo "$i,user$i,$((RANDOM % 60)),$(( RANDOM * 10 ))"
+done >> exemple/test_leger.csv
+
+# Dossier test_moyen/ — 10 fichiers de 10 000 lignes
+# Dossier test_lourd/ — 50 fichiers de 1M lignes
+```
+
+**Script de démonstration `demo.sh` :**
+
+```bash
+#!/bin/bash
+# Ce script tourne pendant la présentation
+
+echo "=== Scénario 1 : Léger (subshell) ==="
+mindctl -a cleaner -p exemple/test_leger.csv -s
+
+echo "=== Scénario 2 : Moyen (fork) ==="
+mindctl -a analyzer -p exemple/test_moyen/ -f
+
+echo "=== Scénario 3 : Lourd (threads + pipeline + email) ==="
+mindctl -w -p exemple/test_lourd/ -t -n email
+```
+
+#### 5. Fichiers à livrer
+
+```
+agents/donnees/insight.sh
+agents/systeme/coder.sh
+interactive/chat.sh
+notifiers/email.sh
+exemple/
+    ├── test_leger.csv
+    ├── test_moyen/
+    └── test_lourd/
+demo.sh
+```
+
+---
+
+### 🔗 Points de coordination entre les 3 personnes
+
+> **Ces 3 éléments doivent être décidés ensemble dès le début avant que chacun commence à coder :**
+
+**1. La fonction `log_message()`** → créée par Personne 1, partagée avec tout le monde.
+
+**2. La fonction `appeler_llm()`** → créée par Personne 3, partagée avec tout le monde.
+
+**3. Le fichier de config `mindctl.conf`** → structure fixée ensemble dès le départ :
+
+```bash
+# /etc/mindctl/mindctl.conf
+NOTIFY_EMAIL="admin@example.com"
+LLM_MODEL="mistral"
+LLM_URL="http://localhost:11434/api/generate"
+LOG_DIR="/var/log/mindctl"
+```
 
 ---
 
 *ENSET Mohammedia © 2026 — Tous droits réservés*
-
-</div>
