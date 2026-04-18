@@ -1,15 +1,15 @@
 <div align="center">
 
 ```
-███████╗██╗   ██╗███████╗███╗   ███╗██╗███╗   ██╗██████╗
-██╔════╝╚██╗ ██╔╝██╔════╝████╗ ████║██║████╗  ██║██╔══██╗
-███████╗ ╚████╔╝ ███████╗██╔████╔██║██║██╔██╗ ██║██║  ██║
-╚════██║  ╚██╔╝  ╚════██║██║╚██╔╝██║██║██║╚██╗██║██║  ██║
-███████║   ██║   ███████║██║ ╚═╝ ██║██║██║ ╚████║██████╔╝
-╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═════╝
+███╗   ███╗██╗███╗   ██╗██████╗  ██████╗████████╗██╗
+████╗ ████║██║████╗  ██║██╔══██╗██╔════╝╚══██╔══╝██║
+██╔████╔██║██║██╔██╗ ██║██║  ██║██║        ██║   ██║
+██║╚██╔╝██║██║██║╚██╗██║██║  ██║██║        ██║   ██║
+██║ ╚═╝ ██║██║██║ ╚████║██████╔╝╚██████╗   ██║   ███████╗
+╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═════╝  ╚═════╝   ╚═╝   ╚══════╝
 ```
 
-**Orchestrateur d'Agents IA pour Linux**
+**Orchestrateur Intelligent de Données et de Système**
 
 [![Bash](https://img.shields.io/badge/Bash-5.0+-4EAA25?style=for-the-badge&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
 [![C](https://img.shields.io/badge/C-99-A8B9CC?style=for-the-badge&logo=c&logoColor=white)](https://en.wikipedia.org/wiki/C99)
@@ -19,7 +19,7 @@
 
 <br/>
 
-> 🤖 **sysmind** est un orchestrateur d'agents IA en Bash qui analyse automatiquement vos logs système, surveille vos ressources, et vous envoie des rapports intelligents — le tout en ligne de commande Linux.
+> 🤖 **mindctl** est un orchestrateur d'agents IA en Bash qui analyse automatiquement vos **logs système** ET vos **fichiers de données** (CSV, JSON), détecte les corrélations intelligentes entre les deux, et vous envoie des rapports complets — le tout en ligne de commande Linux.
 
 <br/>
 
@@ -36,7 +36,7 @@
 - [🔀 Modes d'exécution](#-modes-dexécution)
 - [💬 Mode interactif](#-mode-interactif)
 - [📧 Notifications email](#-notifications-email)
-- [📁 Ce que sysmind exploite](#-ce-que-sysmind-exploite)
+- [📁 Ce que mindctl exploite](#-ce-que-mindctl-exploite)
 - [🛡️ Gestion des erreurs](#️-gestion-des-erreurs)
 - [📊 Journalisation](#-journalisation)
 - [✅ Conformité aux exigences du prof](#-conformité-aux-exigences-du-prof)
@@ -49,15 +49,15 @@
 
 ## 🎯 Présentation du projet
 
-**sysmind** (*System Mind*) est un outil en ligne de commande Linux développé en Bash et C, qui orchestre plusieurs **agents IA spécialisés** pour analyser automatiquement votre système Linux.
+**mindctl** (*Mind Control*) est un outil en ligne de commande Linux développé en Bash et C, qui orchestre plusieurs **agents IA spécialisés** pour analyser intelligemment deux types de données :
 
-Chaque agent est un programme autonome qui :
-1. **Collecte** des données depuis le système (logs, métriques, fichiers de config)
-2. **Envoie** ces données à un LLM local (Ollama / Mistral) via `curl`
-3. **Retourne** une analyse intelligente et des recommandations concrètes
+- 🖥️ **Données système** : logs Linux, métriques CPU/RAM/disque, fichiers de configuration
+- 📊 **Données fichiers** : CSV, JSON, TXT bruts issus de pipelines Big Data
+
+La puissance unique de mindctl réside dans sa capacité à **croiser les deux sources** pour détecter des corrélations invisibles à l'œil humain.
 
 ```
-sysmind [options] -p <fichier_ou_dossier>
+mindctl [options] -p <fichier_ou_dossier>
 ```
 
 ---
@@ -66,43 +66,77 @@ sysmind [options] -p <fichier_ou_dossier>
 
 ### Le problème
 
-Un administrateur système reçoit chaque jour :
-- Des **centaines de lignes de logs** illisibles
-- Des **alertes de serveur** incompréhensibles
-- Des **fichiers de configuration** complexes à vérifier
+Un développeur ou administrateur système fait face chaque jour à **deux problèmes distincts mais liés** :
 
-Sans outil adapté, il passe des heures à lire, filtrer et comprendre manuellement.
+**Problème 1 — Côté système :**
+Des centaines de lignes de logs illisibles, des alertes incompréhensibles, un serveur lent sans raison apparente.
 
-### La solution : sysmind
+**Problème 2 — Côté données :**
+Des fichiers CSV mal formatés, des JSON désorganisés, des doublons et valeurs nulles impossibles à exploiter directement.
+
+Sans outil adapté, il jongle entre plusieurs programmes, perd des heures, et rate souvent les corrélations entre les deux sources.
+
+### La solution : mindctl
 
 ```
-Sans sysmind                    Avec sysmind
-─────────────────               ─────────────────────────────
-Lire 500 lignes de logs  ──→    sysmind -a summarizer -p /var/log/syslog
-Comprendre les erreurs   ──→    [agent] 3 erreurs critiques détectées :
-Chercher des solutions   ──→           → Disk I/O error sur /dev/sda
-Écrire un rapport        ──→           → SSH brute-force depuis 192.168.1.45
-Durée : 2 heures         ──→    Durée : 8 secondes ✅
+Sans mindctl                        Avec mindctl
+──────────────────────────          ──────────────────────────────────
+Lire 500 lignes de logs    ──→      mindctl -a summarizer -p /var/log/syslog
+Nettoyer CSV manuellement  ──→      mindctl -a cleaner -p dataset.csv
+Chercher des corrélations  ──→      mindctl -w -p /var/log/ -p dataset.csv
+Écrire un rapport          ──→      Rapport généré + envoyé par email
+Durée : 3 heures           ──→      Durée : 15 secondes ✅
 ```
+
+### La valeur unique : la corrélation croisée
+
+```
+Logs système  ──→  erreur Disk I/O à 09:15
+Données CSV   ──→  pic anormal dans les métriques à 09:15
+                              │
+                              ▼
+         [agent insight] Corrélation détectée :
+         La surcharge disque a causé l'anomalie dans vos données
+```
+
+C'est ce que ni un outil système seul, ni un outil Big Data seul ne peut faire.
 
 ### Pourquoi c'est innovant ?
 
 - 🧠 **Agentic AI** : thème numéro 1 mondial en 2026
+- 🔗 **Fusion unique** : système + données dans un seul outil
 - 🐧 **100% Linux natif** : aucune dépendance externe lourde
-- 🔗 **Pipeline multi-agents** : les agents se chaînent automatiquement
+- ⚡ **Pipeline multi-agents** : les agents se chaînent automatiquement
 - 💬 **Mode interactif** : chat en temps réel avec l'agent dans le terminal
-- 📧 **Notifications email** : rapport envoyé automatiquement après chaque analyse
+- 📧 **Notifications email** : rapport envoyé automatiquement
 
 ---
 
 ## 🤖 Les agents disponibles
 
+### Branche Système
+
 | Agent | Rôle | Commande exemple |
 |-------|------|-----------------|
-| 🔍 `summarizer` | Résume et explique un fichier log | `sysmind -a summarizer -p /var/log/syslog` |
-| 🗂️ `classifier` | Classe les erreurs par catégorie et gravité | `sysmind -a classifier -p /var/log/auth.log` |
-| 📊 `monitor` | Analyse CPU, RAM, disque, réseau en temps réel | `sysmind -a monitor` |
-| 💻 `coder` | Analyse un script Bash ou fichier C et détecte les bugs | `sysmind -a coder -p monscript.sh` |
+| 🔍 `summarizer` | Résume et explique un fichier log | `mindctl -a summarizer -p /var/log/syslog` |
+| 🗂️ `classifier` | Classe les erreurs par catégorie et gravité | `mindctl -a classifier -p /var/log/auth.log` |
+| 📊 `monitor` | Analyse CPU, RAM, disque, réseau en temps réel | `mindctl -a monitor` |
+| 💻 `coder` | Analyse un script et détecte les bugs | `mindctl -a coder -p monscript.sh` |
+
+### Branche Données
+
+| Agent | Rôle | Commande exemple |
+|-------|------|-----------------|
+| 🧹 `cleaner` | Supprime doublons, nulls, lignes vides | `mindctl -a cleaner -p data.csv` |
+| 🔄 `transformer` | Convertit formats CSV ↔ JSON | `mindctl -a transformer -p data.json` |
+| 📈 `analyzer` | Statistiques : moyennes, écarts, anomalies | `mindctl -a analyzer -p data.csv` |
+| ✅ `validator` | Vérifie la structure et le format du fichier | `mindctl -a validator -p data.json` |
+
+### Agent Fusion
+
+| Agent | Rôle | Commande exemple |
+|-------|------|-----------------|
+| 🧠 `insight` | Corrélation croisée système + données via LLM | `mindctl -a insight -p /var/log/ -p data.csv` |
 
 ---
 
@@ -110,7 +144,7 @@ Durée : 2 heures         ──→    Durée : 8 secondes ✅
 
 ```
 SYNOPSIS
-    sysmind [OPTIONS] -p <paramètre>
+    mindctl [OPTIONS] -p <paramètre>
 
 OPTIONS OBLIGATOIRES
     -p <chemin>       Fichier, dossier ou texte à analyser (OBLIGATOIRE)
@@ -120,76 +154,78 @@ OPTIONS PRINCIPALES
     -f                Exécution via fork()    — processus fils isolé (C)
     -t                Exécution via threads   — parallélisme pthreads (C)
     -s                Exécution via subshell  — environnement isolé Bash
-    -l <dossier>      Dossier de stockage des logs (défaut: /var/log/sysmind)
+    -l <dossier>      Dossier de stockage des logs (défaut: /var/log/mindctl)
     -r                Réinitialise la configuration (administrateur requis)
 
 OPTIONS AVANCÉES
-    -a <agent>        Choisit l'agent : summarizer | classifier | monitor | coder
+    -a <agent>        Choisit l'agent (voir liste des agents)
     -w                Mode pipeline : chaîne plusieurs agents automatiquement
     -i                Mode interactif : chat en temps réel avec l'agent
     -n email          Envoie le rapport par email après l'analyse
+    -c                Nettoyage rapide sans passer par -a cleaner
+    -z                Compression et archivage automatique après traitement
 ```
 
 ---
 
 ## 🔀 Modes d'exécution
 
-sysmind propose **3 modes d'exécution** correspondant aux options `-s`, `-f` et `-t` :
+mindctl propose **3 modes d'exécution** pour s'adapter à la charge de travail :
 
-### 🔵 `-s` Subshell — Isolation Bash
+### 🔵 `-s` Subshell — Traitement léger
 
-Le rapport final s'exécute dans un sous-shell Bash isolé. Si le déploiement échoue, le script principal continue sans être affecté.
+Le traitement s'exécute dans un sous-shell Bash isolé. Si le traitement échoue, le script principal continue sans être affecté.
 
 ```bash
-sysmind -a summarizer -p /var/log/syslog -s
+mindctl -a cleaner -p data.csv -s
 ```
 
 ```
 Shell principal
-    └── (sous-shell) → génère le rapport → ferme proprement
+    └── (sous-shell) → nettoie data.csv → ferme proprement
 ```
 
-**Quand l'utiliser :** traitements légers, 1 seul fichier à analyser.
+**Quand l'utiliser :** 1 seul fichier, traitement simple.
 
 ---
 
-### 🟡 `-f` Fork — Isolation par processus (C)
+### 🟡 `-f` Fork — Traitement moyen (C)
 
-Chaque agent est lancé dans un **processus fils indépendant** via `fork()`. Si un agent plante (timeout LLM, erreur réseau), les autres continuent.
+Chaque fichier est traité dans un **processus fils indépendant** via `fork()`. Si un traitement échoue, les autres continuent.
 
 ```bash
-sysmind -a classifier -p /var/log/ -f
+mindctl -a analyzer -p /data/ -f
 ```
 
 ```
-Processus père (sysmind)
-    ├── fork() → Agent 1 (syslog)   → analyse → résultat
-    ├── fork() → Agent 2 (auth.log) → analyse → résultat
-    └── fork() → Agent 3 (kern.log) → analyse → résultat
+Processus père (mindctl)
+    ├── fork() → data1.csv   → analyse → résultat
+    ├── fork() → data2.json  → analyse → résultat
+    └── fork() → data3.txt   → analyse → résultat
 ```
 
-**Quand l'utiliser :** traitements moyens, plusieurs fichiers à analyser en parallèle.
+**Quand l'utiliser :** 5 à 10 fichiers, traitements indépendants.
 
 ---
 
-### 🔴 `-t` Threads — Parallélisme maximal (C + pthreads)
+### 🔴 `-t` Threads — Traitement lourd (C + pthreads)
 
-Plusieurs fichiers sont analysés **simultanément** dans le même processus via `pthreads`. Plus léger que fork, idéal pour de grandes quantités de fichiers.
+Plusieurs fichiers sont traités **simultanément** dans le même processus via `pthreads`. Plus léger que fork, idéal pour de grandes quantités de fichiers.
 
 ```bash
-sysmind -a summarizer -p /var/log/ -t
+mindctl -a insight -p /data/ -t
 ```
 
 ```
-Processus unique (sysmind)
-    ├── Thread 1 → syslog     ──→ analyse LLM
-    ├── Thread 2 → auth.log   ──→ analyse LLM
-    ├── Thread 3 → kern.log   ──→ analyse LLM
-    └── Thread 4 → dpkg.log   ──→ analyse LLM
+Processus unique (mindctl)
+    ├── Thread 1 → data1.csv   ──→ analyse LLM
+    ├── Thread 2 → data2.json  ──→ analyse LLM
+    ├── Thread 3 → syslog      ──→ analyse LLM
+    └── Thread 4 → auth.log    ──→ analyse LLM
                                (tous simultanément)
 ```
 
-**Quand l'utiliser :** traitements lourds, 10 à 50 fichiers à analyser.
+**Quand l'utiliser :** 10 à 50 fichiers, pipeline complet.
 
 ---
 
@@ -197,60 +233,58 @@ Processus unique (sysmind)
 
 | Mode | Fichiers | Temps estimé | Ressources |
 |------|----------|-------------|------------|
-| `-s` Subshell | 1 fichier | ~3s | Légères |
+| `-s` Subshell | 1 fichier | ~2s | Légères |
 | `-f` Fork | 5-10 fichiers | ~5s | Moyennes |
-| `-t` Threads | 50 fichiers | ~8s | Optimisées |
-| Sans parallélisme | 50 fichiers | ~150s | — |
+| `-t` Threads | 50 fichiers | ~10s | Optimisées |
+| Sans parallélisme | 50 fichiers | ~180s | — |
 
 ---
 
 ## 💬 Mode interactif
 
-Le mode interactif `-i` permet de **discuter directement** avec l'agent IA dans le terminal. L'agent se souvient du contexte de la conversation.
+Le mode interactif `-i` permet de **discuter directement** avec l'agent IA dans le terminal. L'agent se souvient du contexte de la conversation et peut traiter aussi bien des logs que des fichiers CSV.
 
 ```bash
-sysmind -i
+mindctl -i
 ```
 
 ```
 ╔══════════════════════════════════════════════════╗
-║          sysmind — Mode Interactif v1.0          ║
+║          mindctl — Mode Interactif v1.0          ║
 ║          Tapez 'help' pour les commandes         ║
 ╚══════════════════════════════════════════════════╝
 
-[agent] Bonjour ! Je surveille votre système. Que voulez-vous analyser ?
+[agent] Bonjour ! Je peux analyser vos logs et vos données.
+        Que voulez-vous traiter ?
 
 [vous]  analyse les erreurs dans /var/log/syslog
 
-[agent] Lecture du fichier...
-        Envoi au LLM pour analyse...
-
-        Résultat :
+[agent] Lecture du fichier... Filtrage... Envoi au LLM...
         → 3 erreurs critiques détectées
         → Disk I/O error à 09:15 sur /dev/sda
         → SSH failed login x5 depuis 192.168.1.45
-        → Memory pressure à 09:45 (94% utilisé)
 
-[vous]  c'est grave le disk I/O error ?
+[vous]  j'ai aussi un fichier metrics.csv de cette période
 
-[agent] Oui, potentiellement grave.
-        /dev/sda montre des signes de défaillance physique.
-        Recommandation : exécutez 'smartctl -a /dev/sda'
-        et planifiez une sauvegarde immédiate.
+[agent] Lecture de metrics.csv... Analyse croisée...
+        → Pic anormal détecté dans metrics.csv à 09:15
+        → Corrélation confirmée avec l'erreur Disk I/O
+        → Cause probable : surcharge disque → données corrompues
 
 [vous]  envoie le rapport par email
 
 [agent] Rapport envoyé à admin@example.com ✅
 
 [vous]  exit
-[agent] Session terminée. Rapport sauvegardé → /var/log/sysmind/history.log
+[agent] Session terminée. Rapport → /var/log/mindctl/history.log
 ```
 
 ### Commandes disponibles en mode interactif
 
 | Commande | Action |
 |----------|--------|
-| `analyse <fichier>` | Lance l'agent summarizer sur ce fichier |
+| `analyse <fichier>` | Analyse logs ou données selon le type de fichier |
+| `nettoie <fichier>` | Lance le cleaner sur un CSV/JSON |
 | `monitore` | Affiche CPU/RAM/Disque en direct |
 | `rapport` | Génère et envoie le rapport par email |
 | `historique` | Affiche les 10 derniers échanges |
@@ -264,59 +298,65 @@ sysmind -i
 
 ## 📧 Notifications email
 
-Avec l'option `-n email`, sysmind envoie automatiquement le rapport par email après chaque analyse.
+Avec l'option `-n email`, mindctl envoie automatiquement le rapport par email après chaque analyse.
 
 ```bash
-sysmind -a monitor -n email
+mindctl -w -p /var/log/ -p data.csv -n email
 ```
 
-Le rapport reçu par email ressemble à ceci :
-
 ```
-De      : sysmind@votreserveur.com
+De      : mindctl@votreserveur.com
 À       : admin@example.com
-Sujet   : [sysmind] Rapport — 2026-04-17 10:30:00
+Sujet   : [mindctl] Rapport — 2026-04-17 10:30:00
 
-Agent     : monitor
+Pipeline  : système + données
 Statut    : SUCCÈS ✅
 
-Résultat IA :
-→ CPU : 45% (normal)
-→ RAM : 6.2 GB / 8 GB (78% — attention)
-→ Disque /dev/sda : 89% utilisé — CRITIQUE
-→ Recommandation : libérer de l'espace sur /dev/sda immédiatement
+Analyse système :
+→ 3 erreurs critiques dans /var/log/syslog
+→ Disque /dev/sda à 89% — CRITIQUE
 
-Logs complets : /var/log/sysmind/history.log
+Analyse données :
+→ 487 doublons supprimés dans data.csv
+→ Pic anormal détecté à 09:15
+
+Corrélation IA :
+→ La surcharge disque a causé les anomalies dans les données
+
+Logs complets : /var/log/mindctl/history.log
 ```
 
-### Configuration email (`/etc/sysmind/sysmind.conf`)
+### Configuration (`/etc/mindctl/mindctl.conf`)
 
 ```bash
-# Configuration sysmind
 NOTIFY_EMAIL="admin@example.com"
 SMTP_SERVER="smtp.gmail.com"
 LLM_MODEL="mistral"
 LLM_URL="http://localhost:11434/api/generate"
-LOG_DIR="/var/log/sysmind"
+LOG_DIR="/var/log/mindctl"
 ```
 
 ---
 
-## 📁 Ce que sysmind exploite
-
-sysmind peut analyser plusieurs types de données système :
+## 📁 Ce que mindctl exploite
 
 ```
-sysmind exploite
-    ├── 📄 Logs système        /var/log/syslog, auth.log, kern.log...
-    ├── 📊 Métriques système   CPU (top), RAM (free), Disque (df), Réseau (netstat)
-    ├── ⚙️  Fichiers de config  /etc/ssh/sshd_config, /etc/fstab, /etc/hosts...
-    ├── 📜 Historique shell    ~/.bash_history
-    ├── 💻 Code source         Scripts .sh, fichiers .c, .py
-    └── ✍️  Saisie directe     Questions libres en mode interactif -i
+mindctl exploite
+    │
+    ├── DONNÉES SYSTÈME
+    │   ├── Logs Linux          /var/log/syslog, auth.log, kern.log...
+    │   ├── Métriques           CPU (top), RAM (free), Disque (df), Réseau (netstat)
+    │   ├── Fichiers de config  /etc/ssh/sshd_config, /etc/fstab...
+    │   └── Historique shell    ~/.bash_history
+    │
+    ├── DONNÉES FICHIERS
+    │   ├── CSV                 datasets, exports, métriques...
+    │   ├── JSON                APIs, configurations, réponses...
+    │   └── TXT                 logs applicatifs, rapports bruts...
+    │
+    └── SAISIE DIRECTE
+        └── Questions libres en mode interactif -i
 ```
-
-Sous Linux, **tout est du texte** — et le LLM excelle à analyser du texte sous n'importe quelle forme.
 
 ---
 
@@ -324,20 +364,22 @@ Sous Linux, **tout est du texte** — et le LLM excelle à analyser du texte sou
 
 Chaque erreur produit un **code spécifique** et affiche automatiquement l'aide `-h` :
 
-| Code | Erreur | Exemple |
-|------|--------|---------|
-| `100` | Option inexistante | `sysmind -z` |
-| `101` | Paramètre `-p` manquant | `sysmind -a summarizer` |
-| `102` | LLM inaccessible (Ollama non démarré) | — |
-| `103` | Fichier ou dossier introuvable | `sysmind -p /inexistant` |
-| `104` | Permission refusée (option `-r` sans root) | — |
-| `105` | Agent inconnu | `sysmind -a inconnu` |
+| Code | Erreur |
+|------|--------|
+| `100` | Option inexistante |
+| `101` | Paramètre `-p` manquant |
+| `102` | Fichier ou dossier introuvable |
+| `103` | Permission refusée (sans root) |
+| `104` | Format de fichier non supporté |
+| `105` | LLM inaccessible → bascule en mode classique |
+| `106` | Agent inconnu |
+| `107` | Échec du traitement |
 
 ```bash
-$ sysmind -a summarizer
+$ mindctl -a cleaner
 [ERREUR 101] Paramètre obligatoire manquant : -p <fichier>
 
-UTILISATION : sysmind [options] -p <paramètre>
+UTILISATION : mindctl [options] -p <paramètre>
 ...
 ```
 
@@ -345,9 +387,9 @@ UTILISATION : sysmind [options] -p <paramètre>
 
 ## 📊 Journalisation
 
-Toutes les sorties (normales et erreurs) sont redirigées **simultanément** vers le terminal et vers le fichier de log `/var/log/sysmind/history.log`.
+Toutes les sorties sont redirigées **simultanément** vers le terminal et vers `/var/log/mindctl/history.log`.
 
-### Format du fichier de log
+### Format
 
 ```
 yyyy-mm-dd-hh-mm-ss : username : INFOS : message
@@ -357,76 +399,75 @@ yyyy-mm-dd-hh-mm-ss : username : ERROR : message d'erreur
 ### Exemple réel
 
 ```
-2026-04-17-10-30-00 : root : INFOS : Agent summarizer démarré
-2026-04-17-10-30-01 : root : INFOS : Fichier /var/log/syslog lu (1247 lignes)
-2026-04-17-10-30-02 : root : INFOS : Envoi au LLM Mistral...
-2026-04-17-10-30-04 : root : INFOS : Réponse LLM reçue en 1.8s
-2026-04-17-10-30-04 : root : INFOS : Rapport généré avec succès
-2026-04-17-10-30-05 : root : INFOS : Email envoyé à admin@example.com
-2026-04-17-10-30-05 : root : ERROR : Thread 3 timeout après 30s
+2026-04-17-10-30-00 : root : INFOS : Agent cleaner démarré
+2026-04-17-10-30-01 : root : INFOS : Fichier data.csv lu (125430 lignes)
+2026-04-17-10-30-03 : root : INFOS : 487 doublons supprimés
+2026-04-17-10-30-04 : root : INFOS : Agent summarizer démarré
+2026-04-17-10-30-06 : root : INFOS : Réponse LLM reçue en 2.1s
+2026-04-17-10-30-07 : root : INFOS : Corrélation détectée entre logs et CSV
+2026-04-17-10-30-08 : root : INFOS : Email envoyé à admin@example.com
+2026-04-17-10-30-08 : root : ERROR : Thread 3 timeout après 30s
 ```
 
 ### Rapports individuels
 
-Chaque analyse génère aussi son propre fichier rapport :
-
 ```
-/var/log/sysmind/reports/
+/var/log/mindctl/reports/
 ├── report_2026-04-17-10-30-00_syslog.txt
-├── report_2026-04-17-11-00-00_auth.txt
-└── report_2026-04-17-12-00-00_monitor.txt
+├── report_2026-04-17-10-30-00_data.csv.txt
+└── report_2026-04-17-10-30-00_insight.txt
 ```
 
 ---
 
 ## ✅ Conformité aux exigences du prof
 
-Voici comment **sysmind** répond à chaque directive du projet :
-
 ### 3.2.1 — Besoin réel et original ✅
-Automatisation de l'analyse de logs système via agents IA — besoin quotidien réel de tout administrateur système.
+Fusion unique d'analyse système et de préparation de données avec corrélation IA — besoin quotidien réel de tout développeur et administrateur système.
 
 ### 3.2.2 — 6 options obligatoires ✅
-`-h` `-f` `-t` `-s` `-l` `-r` + options avancées `-a` `-p` `-w` `-i` `-n`
+`-h` `-f` `-t` `-s` `-l` `-r` + options avancées `-a` `-p` `-w` `-i` `-n` `-c` `-z`
 
 ### 3.2.2 — Paramètre obligatoire ✅
 `-p <chemin>` est obligatoire. Son absence déclenche l'erreur `101`.
 
 ### 3.2.2 — Commandes Unix/Linux ✅
-`curl`, `grep`, `awk`, `sed`, `tee`, `find`, `top`, `free`, `df`, `netstat`, `inotifywait`, `mail`
+`curl`, `grep`, `awk`, `sed`, `tee`, `find`, `sort`, `uniq`, `tar`, `top`, `free`, `df`, `netstat`, `mail`, `inotifywait`
 
 ### 3.2.2 — Concepts shell ✅
 
-| Concept | Utilisation dans sysmind |
+| Concept | Utilisation dans mindctl |
 |---------|--------------------------|
-| Conditions | Vérifier si Ollama tourne, si fichier existe, si root |
-| Boucles | Parcourir tous les fichiers d'un dossier de logs |
-| Fonctions | `launch_agent()`, `log_message()`, `check_root()`, `send_email()` |
-| Variables d'environnement | `SYSMIND_MODEL`, `SYSMIND_LOG_DIR`, `SYSMIND_EMAIL` |
-| Expressions régulières | Filtrer lignes ERROR/WARNING dans les logs |
-| Pipes et filtres | `cat log \| grep ERROR \| awk '{print $5}' \| curl ...` |
-| Contrôle d'accès | Option `-r` réservée à root via `[[ $EUID -ne 0 ]]` |
-| Archivage/compression | Archivage automatique des anciens rapports avec `tar` |
+| Conditions | Vérifier Ollama, existence fichier, droits root, type de fichier |
+| Boucles | Parcourir tous les fichiers d'un dossier |
+| Fonctions | `launch_agent()`, `log_message()`, `check_root()`, `send_email()`, `detect_type()` |
+| Variables d'environnement | `MINDCTL_MODEL`, `MINDCTL_LOG_DIR`, `MINDCTL_EMAIL` |
+| Expressions régulières | Valider formats CSV/JSON, filtrer erreurs, détecter nulls |
+| Pipes et filtres | `cat data.csv \| grep -v '^$' \| sort \| uniq \| awk ...` |
+| Contrôle d'accès | `-r` réservé à root via `[[ $EUID -ne 0 ]]` |
+| Archivage/compression | `tar -czf` automatique après traitement |
 
 ### 3.2.2 — Fork / Thread / Subshell ✅
-Trois modes justifiés logiquement, implémentés en C (`fork_agent.c`, `thread_agent.c`) et Bash.
 
-### 3.2.2 — Journalisation ✅
-`/var/log/sysmind/history.log` avec format `yyyy-mm-dd-hh-mm-ss : username : TYPE : message`
+| Mode | Justification dans mindctl |
+|------|---------------------------|
+| `-s` Subshell | Traitement léger d'un seul fichier en isolation |
+| `-f` Fork | Chaque agent lancé en processus fils indépendant |
+| `-t` Threads | Analyse simultanée de 50 fichiers via pthreads |
 
 ### 3.2.3 — Gestion d'erreurs ✅
-5 codes d'erreur spécifiques + affichage automatique de l'aide après chaque erreur.
+8 codes d'erreur spécifiques + affichage automatique de l'aide après chaque erreur.
 
 ### 3.2.4 — 3 scénarios de test ✅
 
 | Scénario | Description | Mode |
 |----------|-------------|------|
-| 🟢 Léger | 1 fichier log → agent summarizer | `-s` subshell |
-| 🟡 Moyen | 10 fichiers → 3 agents en parallèle | `-t` threads |
-| 🔴 Lourd | Pipeline complet sur 50 fichiers | `-f` fork + `-w` |
+| 🟢 Léger | 1 fichier CSV → agent cleaner | `-s` subshell |
+| 🟡 Moyen | 10 fichiers logs + CSV → agents en parallèle | `-f` fork |
+| 🔴 Lourd | Pipeline complet système + données sur 50 fichiers | `-t` threads + `-w` |
 
 ### 3.2.5 — Documentation ✅
-Version simplifiée accessible via `-h`. Version complète dans le PDF avec captures d'écran.
+Version simplifiée via `-h`. Version complète dans le PDF avec captures d'écran et exemples détaillés.
 
 ---
 
@@ -443,42 +484,46 @@ ollama pull mistral
 sudo apt install mailutils curl inotify-tools gcc
 ```
 
-### Installation de sysmind
+### Installation
 
 ```bash
-git clone https://github.com/votre-equipe/sysmind.git
-cd sysmind
-chmod +x sysmind.sh
-sudo cp sysmind.sh /usr/local/bin/sysmind
+git clone https://github.com/votre-equipe/mindctl.git
+cd mindctl
+chmod +x mindctl.sh
+sudo cp mindctl.sh /usr/local/bin/mindctl
 
 # Compiler les modules C
 gcc fork_agent.c -o fork_agent
 gcc thread_agent.c -o thread_agent -lpthread
 
-# Créer le dossier de logs
-sudo mkdir -p /var/log/sysmind/reports
+# Créer les dossiers nécessaires
+sudo mkdir -p /var/log/mindctl/reports
+sudo mkdir -p /etc/mindctl
 ```
 
 ### Exemples d'utilisation
 
 ```bash
-# Analyser un fichier log (subshell)
-sysmind -a summarizer -p /var/log/syslog -s
+# Analyser un fichier log
+mindctl -a summarizer -p /var/log/syslog -s
 
-# Analyser un dossier entier en parallèle (threads)
-sysmind -a classifier -p /var/log/ -t
+# Nettoyer un fichier CSV
+mindctl -a cleaner -p dataset.csv -s
 
-# Pipeline complet avec notification email (fork)
-sysmind -w -p /var/log/ -f -n email
+# Analyser un dossier entier en parallèle
+mindctl -a analyzer -p /data/ -t
 
-# Mode interactif (chat avec l'agent)
-sysmind -i
+# Pipeline complet système + données avec email
+mindctl -w -p /var/log/ -p data.csv -f -n email
 
-# Surveiller les ressources système
-sysmind -a monitor
+# Mode interactif
+mindctl -i
+
+# Corrélation croisée système + données
+mindctl -a insight -p /var/log/ -p metrics.csv
 
 # Afficher l'aide
-sysmind -h
+mindctl -h
 ```
 
 ---
@@ -487,23 +532,24 @@ sysmind -h
 
 ### Scénario 1 — Léger (subshell)
 ```bash
-sysmind -a summarizer -p /var/log/syslog -s
-# 1 fichier, 1 agent, sous-shell isolé
-# Temps attendu : ~3 secondes
+mindctl -a cleaner -p data_100.csv -s
+# 1 fichier CSV, 100 lignes
+# Temps attendu : ~2 secondes
 ```
 
-### Scénario 2 — Moyen (threads)
+### Scénario 2 — Moyen (fork)
 ```bash
-sysmind -a classifier -p /var/log/ -t
-# 10 fichiers, analyse en parallèle via threads
-# Temps attendu : ~8 secondes
+mindctl -a analyzer -p /data/medium/ -f
+# 10 fichiers mixtes logs + CSV
+# Temps attendu : ~5 secondes
 ```
 
-### Scénario 3 — Lourd (fork + pipeline)
+### Scénario 3 — Lourd (threads + pipeline complet)
 ```bash
-sysmind -w -p /var/log/ -f -n email
-# 50 fichiers, pipeline 3 agents chaînés via fork
-# Rapport envoyé par email à la fin
+mindctl -w -p /var/log/ -p /data/large/ -t -n email
+# 50 fichiers système + données
+# Corrélation IA croisée
+# Rapport envoyé par email
 # Temps attendu : ~15 secondes
 ```
 
@@ -512,32 +558,40 @@ sysmind -w -p /var/log/ -f -n email
 ## 📦 Structure du projet
 
 ```
-sysmind/
+mindctl/
 │
-├── sysmind.sh                  ← Script principal (chef d'orchestre)
+├── mindctl.sh                    ← Script principal (chef d'orchestre)
 │
 ├── agents/
-│   ├── summarizer.sh           ← Résume et explique les logs
-│   ├── classifier.sh           ← Classe les erreurs par catégorie
-│   ├── monitor.sh              ← Analyse les ressources système
-│   └── coder.sh                ← Analyse du code source
+│   ├── systeme/
+│   │   ├── summarizer.sh         ← Résume les logs Linux
+│   │   ├── classifier.sh         ← Classe les erreurs par gravité
+│   │   ├── monitor.sh            ← Surveille CPU/RAM/disque
+│   │   └── coder.sh              ← Analyse les scripts
+│   │
+│   └── donnees/
+│       ├── cleaner.sh            ← Supprime doublons et nulls
+│       ├── transformer.sh        ← Convertit CSV ↔ JSON
+│       ├── analyzer.sh           ← Statistiques et anomalies
+│       ├── validator.sh          ← Vérifie la structure
+│       └── insight.sh            ← Corrélation croisée IA
 │
 ├── notifiers/
-│   └── email.sh                ← Envoi du rapport par email
+│   └── email.sh                  ← Envoi rapport par email
 │
 ├── interactive/
-│   └── chat.sh                 ← Mode interactif (-i)
+│   └── chat.sh                   ← Mode interactif (-i)
 │
-├── fork_agent.c                ← Gestion fork() en C
-├── thread_agent.c              ← Gestion pthreads en C
+├── fork_agent.c                  ← Gestion fork() en C
+├── thread_agent.c                ← Gestion pthreads en C
 │
 ├── exemple/
-│   ├── test_leger.log          ← Log pour scénario léger
-│   ├── test_moyen/             ← 10 logs pour scénario moyen
-│   └── test_lourd/             ← 50 logs pour scénario lourd
+│   ├── test_leger.csv            ← 100 lignes pour scénario léger
+│   ├── test_moyen/               ← 10 fichiers pour scénario moyen
+│   └── test_lourd/               ← 50 fichiers pour scénario lourd
 │
-├── sysmind.conf                ← Fichier de configuration
-└── README.md                   ← Ce fichier
+├── mindctl.conf                  ← Fichier de configuration
+└── README.md                     ← Ce fichier
 ```
 
 ---
