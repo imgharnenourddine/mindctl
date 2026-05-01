@@ -14,12 +14,12 @@
 [![Bash](https://img.shields.io/badge/Bash-5.0+-4EAA25?style=for-the-badge&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
 [![C](https://img.shields.io/badge/C-99-A8B9CC?style=for-the-badge&logo=c&logoColor=white)](https://en.wikipedia.org/wiki/C99)
 [![Linux](https://img.shields.io/badge/Linux-Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
-[![LLM](https://img.shields.io/badge/LLM-Ollama%2FMistral-7C3AED?style=for-the-badge)](https://ollama.ai/)
+[![LLM](https://img.shields.io/badge/LLM-Mistral%20AI%20API-7C3AED?style=for-the-badge)](https://mistral.ai/)
 [![ENSET](https://img.shields.io/badge/ENSET-Mohammedia%202026-0EA5E9?style=for-the-badge)](.)
 
 <br/>
 
-> 🤖 **mindctl** est un outil en ligne de commande Bash/C qui corrige automatiquement les conflits de configuration DevOps, vérifie la compatibilité du système Linux, lance le projet, et analyse intelligemment les données de production — le tout assisté par un LLM local (Ollama/Mistral).
+> 🤖 **mindctl** est un outil en ligne de commande Bash/C qui corrige automatiquement les conflits de configuration DevOps, vérifie la compatibilité du système Linux, lance le projet, et analyse intelligemment les données de production — le tout assisté par l'API Mistral AI (gratuite).
 
 <br/>
 
@@ -51,7 +51,7 @@
 
 **mindctl** (*Mind Control*) est un outil en ligne de commande Linux développé en Bash et C qui orchestre deux composantes liées intelligemment :
 
-- **depguard** : corrige les conflits de configuration DevOps, vérifie la compatibilité du système Linux, lance le projet et diagnostique les échecs via LLM
+- **depguard** : corrige les conflits de configuration DevOps, vérifie la compatibilité du système Linux, lance le projet et diagnostique les échecs via l'API Mistral AI
 - **Agents données** : nettoient, transforment et analysent les données de production extraites automatiquement depuis la base de données détectée par depguard
 
 ```
@@ -94,7 +94,7 @@ mindctl (chef d'orchestre)
          │                                 │
          ▼                                 ▼
   ┌─────────────────────────────────────────────┐
-  │              LLM (Ollama / Mistral)          │
+  │         Mistral AI API (api.mistral.ai)      │
   │  cerveau commun aux deux composantes         │
   └─────────────────────────────────────────────┘
          │
@@ -190,6 +190,19 @@ depguard scanne automatiquement tous les fichiers de configuration du projet et 
 **Correction :** après accord de l'utilisateur, `sed` applique les corrections directement dans les fichiers. Une sauvegarde `.backup` est créée avant toute modification.
 
 > **Rôle du LLM ici :** comprendre *quel* conflit choisir et *pourquoi*. Bash détecte la différence, le LLM comprend le sens.
+
+---
+
+### Prérequis
+
+```bash
+# Installer les dépendances système
+sudo apt install curl gcc jq
+
+# Obtenir une clé API Mistral AI gratuite
+# → https://console.mistral.ai → Sign Up → API Keys → Create key
+# → Copier la clé dans mindctl.conf
+```
 
 ---
 
@@ -310,7 +323,7 @@ Les modules C sont nécessaires car `fork()` et `pthreads` sont des appels syst�
 
 ---
 
-## 🧠 Composante 3 — LLM et Agent Insight
+## 🧠 Composante 3 — API Mistral AI et Agent Insight
 
 ### Agent insight — La corrélation croisée
 
@@ -336,11 +349,11 @@ C'est ce que ni un outil DevOps seul, ni un outil d'analyse de données seul ne 
 
 ---
 
-## 🤖 Rôle précis du LLM
+## 🤖 Rôle précis de l'API Mistral AI
 
-Le LLM n'est pas utilisé partout. Il est utilisé **uniquement** là où Bash seul ne peut pas comprendre le sens de ce qu'il voit.
+L'API Mistral AI n'est pas appelée partout. Elle est utilisée **uniquement** là où Bash seul ne peut pas comprendre le sens de ce qu'il voit.
 
-| Endroit | LLM ? | Pourquoi |
+| Endroit | Mistral AI ? | Pourquoi |
 |---------|-------|---------|
 | depguard Étape 1 — conflits config | ✅ Oui | Comprendre quel conflit choisir et pourquoi |
 | depguard Étape 3 — diagnostic démarrage | ✅ Oui | Identifier la cause racine d'un échec |
@@ -348,9 +361,9 @@ Le LLM n'est pas utilisé partout. Il est utilisé **uniquement** là où Bash s
 | insight — corrélation croisée | ✅ Oui | Relier anomalies config et données |
 | cleaner, transformer, validator | ❌ Non | grep, sort, uniq, sed suffisent |
 | Vérification système (Étape 2) | ❌ Non | Les commandes Linux suffisent |
-| Correction des fichiers | ❌ Non | sed applique, LLM décide seulement |
+| Correction des fichiers | ❌ Non | sed applique, Mistral AI décide seulement |
 
-> Le LLM est le **cerveau**, les outils Linux sont les **bras**.
+> L'API Mistral AI est le **cerveau**, les outils Linux sont les **bras**.
 
 ---
 
@@ -692,16 +705,22 @@ agents/validator.sh
 
 > **Rôle :** responsable de l'intelligence du projet et de la démonstration finale. Tu crées le cerveau commun utilisé par toutes les composantes.
 
-#### 1. La fonction LLM — `core/llm.sh`
+#### 1. La fonction API Mistral AI — `core/llm.sh`
 
 **Cette fonction est partagée par tout le monde. Tu dois la créer et la partager dès le début.**
 
+**Prérequis :**
+- Créer un compte gratuit sur [console.mistral.ai](https://console.mistral.ai)
+- Générer une API key gratuite
+- La stocker dans `mindctl.conf` : `MISTRAL_API_KEY=votre_clé_ici`
+
 **Ce que tu dois implémenter :**
-- Vérifier que Ollama tourne avant tout appel
-- Si Ollama inaccessible, déclencher l'erreur `105` et basculer en mode classique
-- Envoyer le prompt au modèle Mistral via `curl` vers `http://localhost:11434/api/generate`
+- Lire la clé API depuis `mindctl.conf`
+- Si clé absente ou invalide, déclencher l'erreur `105` et basculer en mode classique
+- Envoyer le prompt à l'API Mistral AI via `curl` vers `https://api.mistral.ai/v1/chat/completions`
+- Utiliser le modèle `mistral-small-latest` (gratuit et rapide)
 - Parser la réponse JSON pour extraire uniquement le texte de la réponse
-- Logger chaque appel LLM (temps de réponse, statut)
+- Logger chaque appel API (temps de réponse, statut)
 
 #### 2. L'agent Analyzer — `agents/analyzer.sh`
 
@@ -768,9 +787,10 @@ Contenu : DB_TYPE, DB_PORT, DB_USER, DB_PASS, DB_NAME, PROJECT_STATUS
 
 **4. Fichier de configuration `mindctl.conf`** → structure fixée ensemble
 ```
-MINDCTL_MODEL=mistral
+MINDCTL_MODEL=mistral-small-latest
 MINDCTL_LOG_DIR=/var/log/mindctl
-LLM_URL=http://localhost:11434/api/generate
+MISTRAL_API_KEY=votre_clé_api_ici
+LLM_URL=https://api.mistral.ai/v1/chat/completions
 ```
 
 ---
