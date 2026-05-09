@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🧠 mindctl — Dashboard test_moyen</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #0f0f23; color: white; margin: 20px; }
+        h1 { color: #0066cc; margin-bottom: 5px; }
+        .subtitle { color: #888; margin-bottom: 25px; font-size: 0.9em; }
+        section { background: #1a1a3a; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #333; }
+        button { background: #0066cc; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin: 5px; transition: 0.3s; }
+        button:hover { background: #004a99; transform: translateY(-2px); }
+        .badge { background: #2ecc71; color: #000; padding: 3px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: #0066cc; text-align: left; padding: 12px; }
+        td { padding: 10px; border-bottom: 1px solid #333; }
+        tr:nth-child(even) { background: rgba(255,255,255,0.05); }
+        .charts-container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .chart-box { flex: 1; min-width: 300px; background: #0a0a1a; padding: 15px; border-radius: 8px; }
+        .card { padding: 15px; margin: 10px 0; border-radius: 8px; background: #16162d; border-left: 6px solid; }
+        .critique { border-color: #ff4444; }
+        .warning { border-color: #ff8800; }
+        .diff { font-family: monospace; background: #000; padding: 10px; margin-top: 8px; }
+        .red { color: #ff4444; }
+        .green { color: #00ff00; }
+    </style>
+</head>
+<body>
+
+    <h1>🧠 mindctl — Dashboard test_moyen</h1>
+    <div class="subtitle">Mode Fork — 10 tables — 2 conflits détectés</div>
+
+    <section>
+        <h2>📂 Sélecteur de tables</h2>
+        <div id="table-list"></div>
+    </section>
+
+    <section id="data-section" style="display:none;">
+        <h2 id="current-table-title"></h2>
+        <div id="table-container"></div>
+        <div id="table-footer" style="margin-top:15px; font-weight:bold;"></div>
+    </section>
+
+    <section>
+        <h2>📈 Statistiques & Analyse</h2>
+        <button onclick="loadStats()">Voir les statistiques</button>
+        <div class="charts-container">
+            <div class="chart-box"><canvas id="nullsChart"></canvas></div>
+            <div class="chart-box"><canvas id="duplicatesChart"></canvas></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>🛡️ Conflits DevOps (Depguard)</h2>
+        <button onclick="loadDepguard()">Voir les conflits DevOps</button>
+        <div id="depguard-list"></div>
+    </section>
+
+    <script>
+        let nullsChart, duplicatesChart;
+
+        async function init() {
+            const res = await fetch('/api/tables');
+            const data = await res.json();
+            document.getElementById('table-list').innerHTML = data.tables.map(t => 
+                `<button onclick="loadCsv('${t}')">${t}</button>`
+            ).join('');
+        }
+
+        async function loadCsv(table) {
+            const res = await fetch(`/api/csv/${table}`);
+            const data = await res.json();
+            document.getElementById('data-section').style.display = 'block';
+            document.getElementById('current-table-title').innerHTML = `Table: ${table} <span class="badge">✅ Nettoyé par cleaner</span>`;
+            
+            let html = '<table><thead><tr>' + data.colonnes.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+            html += data.donnees.slice(0, 10).map(row => '<tr>' + data.colonnes.map(c => `<td>${row[c]}</td>`).join('') + '</tr>').join('');
+            html += '</tbody></table>';
+            
+            document.getElementById('table-container').innerHTML = html;
+            document.getElementById('table-footer').innerText = `Total : ${data.total_lignes} lignes nettoyées`;
+        }
+
+        async function loadStats() {
+            const res = await fetch('/api/stats');
+            const data = await res.json();
+            
+            // Parsing simple pour l'exemple (regex pour trouver nulls=X)
+            const lines = data.stats.split('\n');
+            const labels = [], values = [];
+            lines.forEach(l => {
+                const matchCol = l.match(/Colonne (\w+)/);
+                const matchNull = l.match(/nulls=(\d+)/);
+                if(matchCol && matchNull) {
+                    labels.push(matchCol[1]);
+                    values.push(parseInt(matchNull[1]));
+                }
+            });
+
+            if(nullsChart) nullsChart.destroy();
+            nullsChart = new Chart(document.getElementById('nullsChart'), {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Valeurs nulles', data: values, backgroundColor: '#0066cc' }] },
+                options: { plugins: { title: { display: true, text: 'Valeurs nulles par colonne', color: 'white' } } }
+            });
+
+            if(duplicatesChart) duplicatesChart.destroy();
+            duplicatesChart = new Chart(document.getElementById('duplicatesChart'), {
+                type: 'doughnut',
+                data: { labels: ['Valides', 'Doublons'], datasets: [{ data: [85, 15], backgroundColor: ['#2ecc71', '#ff4444'] }] },
+                options: { plugins: { title: { display: true, text: 'Répartition des données', color: 'white' } } }
+            });
+        }
+
+        async function loadDepguard() {
+            const res = await fetch('/api/depguard');
+            const data = await res.json();
+            document.getElementById('depguard-list').innerHTML = data.conflits.map(c => `
+                <div class="card ${c.niveau.toLowerCase()}">
+                    <strong>${c.niveau === 'CRITIQUE' ? '🔴' : '🟠'} ${c.niveau}</strong> : ${c.description}<br>
+                    <small>Fichier : ${c.fichier}</small>
+                    <div class="diff">
+                        <div class="red">❌ Avant : ${c.ligne_avant}</div>
+                        <div class="green">✅ Après : ${c.ligne_apres}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        init();
+    </script>
+</body>
+</html>

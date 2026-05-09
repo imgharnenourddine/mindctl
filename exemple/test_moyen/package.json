@@ -1,0 +1,18 @@
+{
+  "name": "mindctl-test-moyen",
+  "version": "1.0.0",
+  "description": "Test moyen mindctl",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "node index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "pg": "^8.11.0",
+    "dotenv": "^16.0.0"
+  }
+}
